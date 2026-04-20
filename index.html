@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>RentIQ — House Rent Predictor</title>
+<link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Cabinet+Grotesk:wght@300;400;500;700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#06080f;
+  --s1:#0c0f1a;
+  --s2:#111625;
+  --s3:#181e2e;
+  --border:#1e2638;
+  --border2:#252d42;
+  --gold:#e8c97a;
+  --gold2:#f0d898;
+  --teal:#4fd1c5;
+  --text:#dce3f5;
+  --muted:#6b7a9f;
+  --dim:#3a4565;
+  --low:#4ade80;
+  --med:#fb923c;
+  --high:#f87171;
+  --r:16px;
+  --font-d:'Clash Display',sans-serif;
+  --font-b:'Cabinet Grotesk',sans-serif;
+}
+
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-b);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ═══ BACKGROUND ═══ */
+.bg-layer{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  overflow:hidden;
+}
+.bg-layer::before{
+  content:'';position:absolute;
+  width:900px;height:900px;
+  top:-200px;left:-300px;
+  background:radial-gradient(circle,rgba(232,201,122,.04) 0%,transparent 65%);
+}
+.bg-layer::after{
+  content:'';position:absolute;
+  width:700px;height:700px;
+  bottom:-100px;right:-200px;
+  background:radial-gradient(circle,rgba(79,209,197,.04) 0%,transparent 65%);
+}
+.grid-bg{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(30,38,56,.5) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(30,38,56,.5) 1px,transparent 1px);
+  background-size:60px 60px;
+  mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,black 0%,transparent 100%);
+}
+
+/* ═══ LAYOUT ═══ */
+.page{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:0 28px 100px}
+
+/* ═══ NAV ═══ */
+nav{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:28px 0 0;
+  margin-bottom:80px;
+}
+.logo{
+  display:flex;align-items:center;gap:10px;
+  font-family:var(--font-d);font-size:20px;font-weight:700;
+  color:var(--gold);letter-spacing:-.01em;
+}
+.logo-icon{
+  width:34px;height:34px;border-radius:8px;
+  background:linear-gradient(135deg,#2a1f00,#4a3800);
+  border:1px solid rgba(232,201,122,.3);
+  display:grid;place-items:center;font-size:16px;
+}
+.nav-tag{
+  font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);
+  background:var(--s2);border:1px solid var(--border);
+  padding:6px 14px;border-radius:20px;
+}
+
+/* ═══ HERO ═══ */
+.hero{
+  text-align:center;margin-bottom:72px;
+  animation:fadeUp .8s ease both;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(232,201,122,.06);
+  border:1px solid rgba(232,201,122,.18);
+  color:var(--gold);font-size:11px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;
+  padding:7px 18px;border-radius:30px;
+  margin-bottom:28px;
+}
+.pulse{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--gold);
+  animation:pulse 2s ease infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+
+.hero h1{
+  font-family:var(--font-d);
+  font-size:clamp(2.8rem,6vw,5.2rem);
+  font-weight:700;line-height:1.05;
+  letter-spacing:-.03em;
+  margin-bottom:22px;
+}
+.hero h1 em{
+  font-style:normal;
+  background:linear-gradient(135deg,var(--gold),var(--gold2),var(--teal));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero p{
+  font-size:17px;font-weight:300;line-height:1.7;
+  color:var(--muted);max-width:520px;margin:0 auto 36px;
+}
+.hero-stats{
+  display:inline-flex;gap:36px;
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:14px;padding:16px 32px;
+}
+.stat-item{text-align:center}
+.stat-num{font-family:var(--font-d);font-size:22px;font-weight:600;color:var(--gold)}
+.stat-lbl{font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-top:2px}
+
+/* ═══ MAIN GRID ═══ */
+.main-grid{
+  display:grid;
+  grid-template-columns:1fr 420px;
+  gap:24px;
+  align-items:start;
+  animation:fadeUp .8s .15s ease both;
+}
+@media(max-width:820px){.main-grid{grid-template-columns:1fr}}
+
+/* ═══ PANEL BASE ═══ */
+.panel{
+  background:var(--s1);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  overflow:hidden;
+}
+.panel-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 24px;
+  border-bottom:1px solid var(--border);
+  background:linear-gradient(180deg,var(--s2) 0%,var(--s1) 100%);
+}
+.panel-title{
+  font-family:var(--font-d);font-size:13px;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+  display:flex;align-items:center;gap:8px;
+}
+.panel-title-dot{
+  width:6px;height:6px;border-radius:50%;background:var(--gold);
+}
+.panel-body{padding:24px}
+
+/* ═══ FORM ═══ */
+.fields{display:flex;flex-direction:column;gap:18px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:500px){.row2{grid-template-columns:1fr}}
+
+.field label{
+  display:block;
+  font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--dim);margin-bottom:8px;
+  transition:color .2s;
+}
+.field:focus-within label{color:var(--gold)}
+
+.input-wrap{position:relative}
+.input-icon{
+  position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  font-size:15px;pointer-events:none;
+  filter:grayscale(1);opacity:.4;
+  transition:opacity .2s,filter .2s;
+}
+.field:focus-within .input-icon{filter:none;opacity:1}
+
+input,select{
+  width:100%;
+  background:var(--s2);
+  border:1px solid var(--border2);
+  border-radius:10px;
+  color:var(--text);
+  font-family:var(--font-b);font-size:15px;font-weight:500;
+  padding:12px 14px 12px 42px;
+  outline:none;
+  appearance:none;
+  transition:border-color .2s,box-shadow .2s,background .2s;
+}
+input:focus,select:focus{
+  border-color:rgba(232,201,122,.5);
+  box-shadow:0 0 0 3px rgba(232,201,122,.08);
+  background:var(--s3);
+}
+input::placeholder{color:var(--dim)}
+select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7a9f' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;
+  padding-right:38px;cursor:pointer;
+}
+
+/* ═══ CITY SELECTOR ═══ */
+.city-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.city-btn{
+  background:var(--s2);border:1px solid var(--border2);
+  border-radius:10px;padding:10px 6px;
+  color:var(--muted);font-family:var(--font-b);font-size:12px;font-weight:500;
+  cursor:pointer;transition:all .18s;text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+}
+.city-btn:hover{border-color:var(--dim);color:var(--text)}
+.city-btn.active{
+  background:rgba(232,201,122,.08);
+  border-color:rgba(232,201,122,.45);
+  color:var(--gold);
+}
+.city-emoji{font-size:18px}
+
+/* ═══ PREDICT BUTTON ═══ */
+.btn-predict{
+  width:100%;margin-top:6px;
+  position:relative;overflow:hidden;
+  background:linear-gradient(135deg,#3a2d00,#5c4800);
+  border:1px solid rgba(232,201,122,.35);
+  border-radius:12px;
+  color:var(--gold2);
+  font-family:var(--font-d);font-size:15px;font-weight:600;
+  letter-spacing:.04em;
+  padding:15px;cursor:pointer;
+  transition:opacity .2s,transform .15s,box-shadow .2s;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+}
+.btn-predict:hover{
+  opacity:.92;transform:translateY(-2px);
+  box-shadow:0 8px 32px rgba(232,201,122,.12);
+}
+.btn-predict:active{transform:translateY(0)}
+.btn-predict:disabled{opacity:.35;cursor:default;transform:none}
+.btn-predict .btn-glow{
+  position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(232,201,122,.12),transparent);
+  transform:translateX(-100%);
+}
+.btn-predict:hover .btn-glow{animation:glide .7s ease}
+@keyframes glide{to{transform:translateX(100%)}}
+
+/* ═══ RESULT PANEL ═══ */
+.result-panel{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:var(--r);
+  min-height:320px;
+  display:flex;flex-direction:column;
+}
+.result-idle{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:40px 24px;text-align:center;
+  color:var(--dim);gap:14px;
+}
+.idle-house{
+  width:72px;height:72px;
+  background:var(--s2);border:1px solid var(--border2);
+  border-radius:16px;display:grid;place-items:center;font-size:32px;
+  animation:float 4s ease-in-out infinite;
+}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.idle-title{font-family:var(--font-d);font-size:16px;font-weight:500;color:var(--muted)}
+.idle-sub{font-size:13px;font-weight:300;line-height:1.5;max-width:200px}
+
+/* Result content */
+.result-content{flex:1;display:flex;flex-direction:column}
+.result-top{
+  padding:28px 24px;text-align:center;
+  border-bottom:1px solid var(--border);
+  position:relative;overflow:hidden;
+}
+.result-glow{
+  position:absolute;top:-60px;left:50%;transform:translateX(-50%);
+  width:300px;height:200px;border-radius:50%;
+  opacity:.07;pointer-events:none;
+}
+.result-badge-wrap{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:5px 16px;border-radius:20px;
+  font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  margin-bottom:14px;border:1px solid currentColor;
+}
+.rbw-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.result-label{
+  font-family:var(--font-d);
+  font-size:58px;font-weight:700;
+  line-height:1;letter-spacing:-.03em;
+  margin-bottom:6px;
+  animation:resultPop .45s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes resultPop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+.result-range{font-size:14px;font-weight:300;color:var(--muted);margin-bottom:20px}
+
+/* Confidence meter */
+.conf-block{
+  display:flex;flex-direction:column;gap:6px;
+  padding:0 4px;
+}
+.conf-header{display:flex;justify-content:space-between;align-items:center}
+.conf-title{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.conf-pct{font-family:var(--font-d);font-size:13px;font-weight:600}
+.conf-track{height:5px;background:var(--s3);border-radius:3px;overflow:hidden}
+.conf-fill{height:100%;border-radius:3px;transition:width 1s cubic-bezier(.22,1,.36,1)}
+
+/* Result details */
+.result-details{padding:20px 24px;display:flex;flex-direction:column;gap:10px}
+.det-row{
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:13px;
+}
+.det-key{color:var(--muted);font-weight:400}
+.det-val{font-weight:600;color:var(--text)}
+
+/* Color classes */
+.c-low{color:var(--low)}
+.c-med{color:var(--med)}
+.c-high{color:var(--high)}
+.bg-low{background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.25)}
+.bg-med{background:rgba(251,146,60,.08);border-color:rgba(251,146,60,.25)}
+.bg-high{background:rgba(248,113,113,.08);border-color:rgba(248,113,113,.25)}
+.fill-low{background:var(--low)}
+.fill-med{background:var(--med)}
+.fill-high{background:var(--high)}
+.glow-low{background:var(--low)}
+.glow-med{background:var(--med)}
+.glow-high{background:var(--high)}
+
+/* ═══ HISTORY ═══ */
+.history-panel{
+  margin-top:20px;
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:var(--r);overflow:hidden;
+}
+.hist-list{display:flex;flex-direction:column}
+.hist-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:13px 20px;
+  border-bottom:1px solid var(--border);
+  font-size:13px;
+  animation:slideIn .3s ease both;
+}
+@keyframes slideIn{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:none}}
+.hist-item:last-child{border-bottom:none}
+.hist-left{display:flex;flex-direction:column;gap:2px}
+.hist-main{font-weight:600;color:var(--text)}
+.hist-sub{font-size:11px;color:var(--muted);font-weight:300}
+.hist-tag{
+  font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  padding:3px 10px;border-radius:12px;border:1px solid currentColor;
+}
+
+/* ═══ ERROR ═══ */
+.err-box{
+  background:rgba(248,113,113,.06);
+  border:1px solid rgba(248,113,113,.2);
+  border-radius:10px;padding:12px 16px;
+  color:var(--high);font-size:13px;
+  display:flex;gap:10px;align-items:flex-start;
+  margin-top:10px;
+}
+
+/* ═══ STEPS SECTION ═══ */
+.steps-section{
+  margin-top:80px;
+  animation:fadeUp .8s .3s ease both;
+}
+.section-header{
+  display:flex;align-items:baseline;gap:16px;margin-bottom:40px;
+}
+.section-title{
+  font-family:var(--font-d);font-size:28px;font-weight:600;letter-spacing:-.02em;
+}
+.section-sub{font-size:14px;color:var(--muted);font-weight:300}
+
+.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:700px){.steps-grid{grid-template-columns:1fr}}
+
+.step-card{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:14px;padding:24px;
+  position:relative;overflow:hidden;
+  transition:border-color .2s,transform .2s;
+  cursor:default;
+}
+.step-card:hover{border-color:var(--border2);transform:translateY(-3px)}
+.step-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  opacity:0;transition:opacity .3s;
+}
+.step-card:hover::before{opacity:1}
+.step-num{
+  font-family:var(--font-d);font-size:40px;font-weight:700;
+  color:rgba(232,201,122,.08);letter-spacing:-.04em;
+  line-height:1;margin-bottom:14px;
+}
+.step-icon{
+  width:40px;height:40px;border-radius:10px;
+  background:var(--s2);border:1px solid var(--border2);
+  display:grid;place-items:center;font-size:18px;
+  margin-bottom:14px;
+}
+.step-name{
+  font-family:var(--font-d);font-size:15px;font-weight:600;
+  margin-bottom:8px;color:var(--text);
+}
+.step-desc{font-size:13px;font-weight:300;line-height:1.7;color:var(--muted)}
+.step-code{
+  margin-top:14px;background:var(--bg);
+  border:1px solid var(--border);border-radius:8px;
+  padding:12px 14px;
+  font-family:'Fira Code','Cascadia Code',monospace;
+  font-size:11.5px;line-height:1.7;color:#8ba3cc;
+  overflow-x:auto;
+  white-space:pre;
+}
+.code-comment{color:#3a4565}
+.code-kw{color:var(--gold)}
+.code-str{color:var(--teal)}
+.code-cmd{color:#a78bfa}
+
+/* ═══ SPINNER ═══ */
+.spinner{
+  width:18px;height:18px;border-radius:50%;
+  border:2px solid rgba(232,201,122,.2);
+  border-top-color:var(--gold);
+  animation:spin .6s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ═══ FOOTER ═══ */
+footer{
+  margin-top:80px;padding-top:32px;
+  border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:12px;color:var(--dim);
+}
+</style>
+</head>
+<body>
+
+<div class="bg-layer"></div>
+<div class="grid-bg"></div>
+
+<div class="page">
+
+  <!-- NAV -->
+  <nav>
+    <div class="logo">
+      <div class="logo-icon">🏠</div>
+      RentIQ
+    </div>
+    <div class="nav-tag">ML-Powered · v1.0</div>
+  </nav>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow"><div class="pulse"></div>Random Forest Classifier · 6 Cities</div>
+    <h1>Predict Your<br/><em>Ideal Rent Range</em></h1>
+    <p>Enter property details and our machine learning model instantly classifies the rent into Low, Medium, or High — trained on 4,700+ real listings.</p>
+    <div class="hero-stats">
+      <div class="stat-item"><div class="stat-num">4,746</div><div class="stat-lbl">Training Samples</div></div>
+      <div class="stat-item"><div class="stat-num">6</div><div class="stat-lbl">Cities Covered</div></div>
+      <div class="stat-item"><div class="stat-num">3</div><div class="stat-lbl">Rent Categories</div></div>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- FORM PANEL -->
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title"><div class="panel-title-dot"></div>Property Details</div>
+        <div style="font-size:11px;color:var(--dim)">Fill all fields</div>
+      </div>
+      <div class="panel-body">
+        <div class="fields">
+
+          <!-- City selector -->
+          <div class="field">
+            <label>City</label>
+            <div class="city-grid" id="cityGrid">
+              <button class="city-btn" data-city="Bangalore" onclick="selectCity(this)"><span class="city-emoji">🌿</span>Bangalore</button>
+              <button class="city-btn" data-city="Chennai" onclick="selectCity(this)"><span class="city-emoji">🌊</span>Chennai</button>
+              <button class="city-btn" data-city="Delhi" onclick="selectCity(this)"><span class="city-emoji">🏛️</span>Delhi</button>
+              <button class="city-btn" data-city="Hyderabad" onclick="selectCity(this)"><span class="city-emoji">💎</span>Hyderabad</button>
+              <button class="city-btn active" data-city="Kolkata" onclick="selectCity(this)"><span class="city-emoji">🎨</span>Kolkata</button>
+              <button class="city-btn" data-city="Mumbai" onclick="selectCity(this)"><span class="city-emoji">🌆</span>Mumbai</button>
+            </div>
+          </div>
+
+          <div class="row2">
+            <div class="field">
+              <label>BHK</label>
+              <div class="input-wrap">
+                <span class="input-icon">🛏</span>
+                <select id="bhk">
+                  <option value="1">1 BHK</option>
+                  <option value="2" selected>2 BHK</option>
+                  <option value="3">3 BHK</option>
+                  <option value="4">4 BHK</option>
+                  <option value="5">5+ BHK</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label>Size (sq ft)</label>
+              <div class="input-wrap">
+                <span class="input-icon">📐</span>
+                <input type="number" id="size" value="1000" min="100" max="10000" placeholder="e.g. 1200"/>
+              </div>
+            </div>
+          </div>
+
+          <div class="row2">
+            <div class="field">
+              <label>Furnishing</label>
+              <div class="input-wrap">
+                <span class="input-icon">🛋</span>
+                <select id="furnishing">
+                  <option>Furnished</option>
+                  <option selected>Semi-Furnished</option>
+                  <option>Unfurnished</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label>Bathrooms</label>
+              <div class="input-wrap">
+                <span class="input-icon">🚿</span>
+                <select id="bathroom">
+                  <option value="1">1</option>
+                  <option value="2" selected>2</option>
+                  <option value="3">3</option>
+                  <option value="4">4+</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="row2">
+            <div class="field">
+              <label>Tenant Preferred</label>
+              <div class="input-wrap">
+                <span class="input-icon">👤</span>
+                <select id="tenant">
+                  <option>Bachelors</option>
+                  <option value="Bachelors/Family" selected>Any</option>
+                  <option>Family</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label>Area Type</label>
+              <div class="input-wrap">
+                <span class="input-icon">📊</span>
+                <select id="area_type">
+                  <option value="Super Area" selected>Super Area</option>
+                  <option value="Carpet Area">Carpet Area</option>
+                  <option value="Built Area">Built Area</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Floor</label>
+            <div class="input-wrap">
+              <span class="input-icon">🏢</span>
+              <select id="floor">
+                <option>Ground out of 2</option>
+                <option>Ground out of 3</option>
+                <option>1 out of 2</option>
+                <option selected>1 out of 3</option>
+                <option>2 out of 3</option>
+                <option>2 out of 4</option>
+                <option>3 out of 4</option>
+                <option>Other</option>
+              </select>
+            </div>
+          </div>
+
+          <button class="btn-predict" id="predictBtn" onclick="predict()">
+            <div class="btn-glow"></div>
+            <span id="btnContent">✦ &nbsp; Predict Rent Category</span>
+          </button>
+          <div id="errBox" style="display:none"></div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div style="display:flex;flex-direction:column;gap:20px">
+
+      <!-- RESULT -->
+      <div class="result-panel" id="resultPanel">
+        <div class="panel-head">
+          <div class="panel-title"><div class="panel-title-dot"></div>Prediction Result</div>
+          <div id="resultStatus" style="font-size:11px;color:var(--dim)">Awaiting input</div>
+        </div>
+        <div class="result-idle" id="resultIdle">
+          <div class="idle-house">🏠</div>
+          <div class="idle-title">Ready to predict</div>
+          <div class="idle-sub">Fill in the property details and hit predict</div>
+        </div>
+        <div id="resultContent" style="display:none;flex:1;flex-direction:column"></div>
+      </div>
+
+      <!-- HISTORY -->
+      <div class="history-panel" id="historyPanel" style="display:none">
+        <div class="panel-head">
+          <div class="panel-title"><div class="panel-title-dot"></div>Recent Searches</div>
+          <button onclick="clearHistory()" style="font-size:11px;color:var(--dim);background:none;border:none;cursor:pointer;">Clear</button>
+        </div>
+        <div class="hist-list" id="histList"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>
+    <div>RentIQ · House Rent Prediction · Random Forest Classifier</div>
+    <div>Flask + Vanilla JS · No build tools required</div>
+  </footer>
+
+</div>
+
+<script>
+const API = "http://localhost:5000";
+let selectedCity = "Kolkata";
+let localHistory = [];
+
+function selectCity(btn) {
+  document.querySelectorAll(".city-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  selectedCity = btn.dataset.city;
+}
+
+async function predict() {
+  const btn = document.getElementById("predictBtn");
+  const errBox = document.getElementById("errBox");
+
+  errBox.style.display = "none";
+  btn.disabled = true;
+  document.getElementById("btnContent").innerHTML = '<div class="spinner"></div> &nbsp; Predicting…';
+  document.getElementById("resultStatus").textContent = "Processing…";
+
+  const payload = {
+    bhk:        document.getElementById("bhk").value,
+    size:       document.getElementById("size").value,
+    city:       selectedCity,
+    furnishing: document.getElementById("furnishing").value,
+    tenant:     document.getElementById("tenant").value,
+    bathroom:   document.getElementById("bathroom").value,
+    area_type:  document.getElementById("area_type").value,
+    floor:      document.getElementById("floor").value,
+  };
+
+  try {
+    const res = await fetch(`${API}/predict`, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(`Server error ${res.status} — is Flask running?`);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    showResult(data, payload);
+    addToHistory(data, payload);
+
+  } catch(err) {
+    showError(err.message);
+    document.getElementById("resultStatus").textContent = "Error";
+  } finally {
+    btn.disabled = false;
+    document.getElementById("btnContent").innerHTML = "✦ &nbsp; Predict Rent Category";
+  }
+}
+
+function showResult(data, payload) {
+  const colorKey = {Low:"low", Medium:"med", High:"high"}[data.category];
+  const conf = data.confidence ?? 82;
+
+  document.getElementById("resultIdle").style.display = "none";
+  document.getElementById("resultStatus").textContent = "Complete ✓";
+
+  const container = document.getElementById("resultContent");
+  container.style.display = "flex";
+  container.innerHTML = `
+    <div class="result-top">
+      <div class="result-glow glow-${colorKey}"></div>
+      <div class="result-badge-wrap bg-${colorKey} c-${colorKey}">
+        <div class="rbw-dot"></div>${data.category} Rent
+      </div>
+      <div class="result-label c-${colorKey}">${data.category}</div>
+      <div class="result-range">${data.range}</div>
+      <div class="conf-block">
+        <div class="conf-header">
+          <span class="conf-title">Model Confidence</span>
+          <span class="conf-pct c-${colorKey}">${conf}%</span>
+        </div>
+        <div class="conf-track">
+          <div class="conf-fill fill-${colorKey}" id="confBar" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+    <div class="result-details">
+      <div class="det-row"><span class="det-key">City</span><span class="det-val">${payload.city}</span></div>
+      <div class="det-row"><span class="det-key">Configuration</span><span class="det-val">${payload.bhk} BHK · ${payload.size} sq ft</span></div>
+      <div class="det-row"><span class="det-key">Furnishing</span><span class="det-val">${payload.furnishing}</span></div>
+      <div class="det-row"><span class="det-key">Bathrooms</span><span class="det-val">${payload.bathroom}</span></div>
+      <div class="det-row"><span class="det-key">Tenant Preferred</span><span class="det-val">${payload.tenant}</span></div>
+    </div>
+  `;
+
+  // Animate confidence bar
+  setTimeout(() => {
+    const bar = document.getElementById("confBar");
+    if(bar) bar.style.width = conf + "%";
+  }, 100);
+}
+
+function addToHistory(data, payload) {
+  localHistory.unshift({data, payload});
+  if(localHistory.length > 6) localHistory.pop();
+
+  const panel = document.getElementById("historyPanel");
+  const list  = document.getElementById("histList");
+  panel.style.display = "block";
+
+  list.innerHTML = localHistory.map((h, i) => {
+    const ck = {Low:"low", Medium:"med", High:"high"}[h.data.category];
+    return `<div class="hist-item" style="animation-delay:${i*0.05}s">
+      <div class="hist-left">
+        <div class="hist-main">${h.payload.bhk} BHK · ${h.payload.size} sqft · ${h.payload.city}</div>
+        <div class="hist-sub">${h.payload.furnishing} · ${h.payload.floor}</div>
+      </div>
+      <div class="hist-tag c-${ck} bg-${ck}">${h.data.category}</div>
+    </div>`;
+  }).join("");
+}
+
+function clearHistory() {
+  localHistory = [];
+  document.getElementById("historyPanel").style.display = "none";
+}
+
+function showError(msg) {
+  const errBox = document.getElementById("errBox");
+  errBox.style.display = "flex";
+  errBox.className = "err-box";
+  errBox.innerHTML = `<span>⚠️</span><div><strong>Prediction failed</strong><br/>${msg}</div>`;
+}
+</script>
+</body>
+</html>
